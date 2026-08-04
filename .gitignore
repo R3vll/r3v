@@ -1,0 +1,7 @@
+# Home-directory repo: ignore everything by default, then re-include
+# exactly what we want under version control. Nothing else from the
+# home dir can be added by accident.
+/*
+!/.gitignore
+!/docs/
+!/docs/**
