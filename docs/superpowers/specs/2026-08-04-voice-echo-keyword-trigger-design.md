@@ -6,12 +6,12 @@
 ## Summary
 
 An always-on Windows program that listens on the microphone for the English
-phrases **"start listening"** and **"stop listening"** using sherpa-onnx
+phrases **"hey computer listen"** and **"hey computer stop"** using sherpa-onnx
 keyword spotting.
 
-- **"start listening"** → enables live dictation (faster-whisper) and echoes
+- **"hey computer listen"** → enables live dictation (faster-whisper) and echoes
   each transcribed line aloud via piper TTS.
-- **"stop listening"** → disables dictation and the echo, leaving only the
+- **"hey computer stop"** → disables dictation and the echo, leaving only the
   keyword spotter running.
 
 Fully local, offline, CPU-only, private.
@@ -22,7 +22,7 @@ Fully local, offline, CPU-only, private.
   for the whole run, so toggling is an instant flag flip — no per-toggle model
   reload (the reload would cost seconds each time).
 - **Always-on keyword spotter.** Even while dictation is active, the spotter
-  keeps listening so "stop listening" is always actionable.
+  keeps listening so "hey computer stop" is always actionable.
 - **Single microphone stream.** One `sounddevice.InputStream` feeds both the
   keyword spotter and the STT pipeline — no double-opening the mic.
 - **Clean `ACTIVE`/`IDLE` state machine.** IDLE is silent and CPU-idle apart
@@ -40,8 +40,8 @@ Fully local, offline, CPU-only, private.
 ```
                  ┌────────────────────────────────────────────────┐
   mic ─► InputStream ─► dispatch ─┬─► sherpa-onnx keyword spotter (ALWAYS on)
- (16 kHz, 512-blk)│                 │  ┌─ "start listening" ─► state=ACTIVE, speak "Listening"
-                 │                 │  └─ "stop listening"  ─► state=IDLE,   speak "Stopped"
+ (16 kHz, 512-blk)│                 │  ┌─ "hey computer listen" ─► state=ACTIVE, speak "Listening"
+                 │                 │  └─ "hey computer stop"  ─► state=IDLE,   speak "Stopped"
                  └─► when ACTIVE: silero VAD + ring buffer
                                      └─► faster-whisper transcriber thread
                                            └─► print "> text" + piper synth → sounddevice play
@@ -56,9 +56,9 @@ Fully local, offline, CPU-only, private.
 | Event | From → To | Actions |
 |---|---|---|
 | (startup) | — → `IDLE` | Load whisper model + piper voice; start spotter |
-| "start listening" | `IDLE` → `ACTIVE` | Speak "Listening"; prime VAD; begin transcription |
-| "stop listening" | `ACTIVE` → `IDLE` | Halt transcription loop; drop queued/in-flight segments; speak "Stopped" |
-| "stop listening" | `IDLE` → `IDLE` | No-op (spotter stays quiet) |
+| "hey computer listen" | `IDLE` → `ACTIVE` | Speak "Listening"; prime VAD; begin transcription |
+| "hey computer stop" | `ACTIVE` → `IDLE` | Halt transcription loop; drop queued/in-flight segments; speak "Stopped" |
+| "hey computer stop" | `IDLE` → `IDLE` | No-op (spotter stays quiet) |
 | Ctrl+C | any → exit | Clean shutdown; no audio |
 
 ## Components
@@ -66,7 +66,7 @@ Fully local, offline, CPU-only, private.
 | File / path | Purpose |
 |---|---|
 | `C:\Users\admin\voice-echo.py` | The program. Constants + CLI args mirroring whisper-live.py: `--device`, `--model`, `--threads`, `--language`, `--voice` |
-| `C:\Users\admin\voice-echo\keywords.txt` | sherpa-onnx keywords: `start listening,10` / `stop listening,10` |
+| `C:\Users\admin\voice-echo\keywords.txt` | sherpa-onnx keywords: `hey computer listen,10` / `hey computer stop,10` (spoken as "hey computer, listen" / "hey computer, stop" — the file drops the comma because `,` is the field delimiter) |
 | `C:\Users\admin\models\sherpa-kws\` | sherpa-onnx int8 zipformer keyword-spotter model (one-time download, ~tens of MB) |
 | `C:\Users\admin\models\piper\` | English piper voice, e.g. `en_US-lessac-medium` (one-time download) |
 
@@ -77,7 +77,7 @@ Fully local, offline, CPU-only, private.
   `sounddevice` output stream — all-Python, no new playback dependency.
 - **State cues:** "Listening" / "Stopped" are spoken aloud at each transition
   so the user gets audible confirmation the trigger registered.
-- **Mid-sentence stop:** if the spotter hears "stop listening" mid-sentence,
+- **Mid-sentence stop:** if the spotter hears "hey computer stop" mid-sentence,
   the in-progress segment is discarded cleanly.
 - **Noise-floor guard:** reuse whisper-live.py's guard (skip segments whose
   RMS < 0.01) so silence isn't transcribed.
@@ -103,9 +103,9 @@ Fully local, offline, CPU-only, private.
 ## Verification
 
 1. **Offline:** run the keyword spotter over the sherpa-onnx test WAVs;
-   confirm both "start listening" and "stop listening" are detected.
-2. **Live mic test:** user says "start listening" → hear "Listening", then
-   dictate → lines echo aloud; say "stop listening" → hear "Stopped", dictation
+   confirm both "hey computer listen" and "hey computer stop" are detected.
+2. **Live mic test:** user says "hey computer listen" → hear "Listening", then
+   dictate → lines echo aloud; say "hey computer stop" → hear "Stopped", dictation
    stops, spotter remains armed.
 
 ## Out of scope / future
