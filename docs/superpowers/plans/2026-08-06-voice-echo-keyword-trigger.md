@@ -230,11 +230,11 @@ The engine is proven working offline. (No git commit — `voice-echo/` and `mode
 Create `C:\Users\admin\voice-echo\keywords.raw.txt`:
 
 ```
-hey computer listen :3.0 #0.25
-hey computer stop :3.0 #0.25
+HEY COMPUTER LISTEN :3.0 #0.25
+HEY COMPUTER STOP :3.0 #0.25
 ```
 
-(`:score` = boosting score, larger = easier to trigger; `#threshold` = trigger probability, lower = easier. Format per sherpa-onnx docs — spaces around `:`/`#` are allowed in the *input*, not in the output.)
+(`:score` = boosting score, larger = easier to trigger; `#threshold` = trigger probability, lower = easier. Format per sherpa-onnx docs — spaces around `:`/`#` are allowed in the *input*, not in the output. **Must be UPPERCASE** — the GigaSpeech BPE model is case-sensitive; lowercase keywords fail with "can't find token".)
 
 - [ ] **Step 2: Tokenize with text2token**
 
