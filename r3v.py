@@ -45,7 +45,7 @@ DEFAULT_CONFIG = {
 
 R="\033[0m"; BOLD="\033[1m"; DIM="\033[2m"; ITALIC="\033[3m"
 RED="\033[91m"; GREEN="\033[92m"; YELLOW="\033[93m"
-BLUE="\033[94m"; MAGENTA="\033[95m"; CYAN="\033[90m"; WHITE="\033[97m"
+BLUE="\033[94m"; MAGENTA="\033[95m"; GRAY="\033[90m"; WHITE="\033[97m"
 
 def load_config():
     if CONFIG_FILE.exists():
@@ -66,10 +66,12 @@ def save_config(config):
 
 def banner(provider, model):
     print(f"""
-{CYAN}╔════════════════════════════════════════════════════════════╗{R}
-{CYAN}║{R} {BOLD}R3v AI Terminal Assistant{R}                             {CYAN}║{R}
-{CYAN}║{R} Provider: {GREEN}{provider:<10}{R} | Model: {YELLOW}{model:<24}{R} {CYAN}║{R}
-{CYAN}╚════════════════════════════════════════════════════════════╝{R}
+{GRAY}██████╗ ██████╗██╗   ██║
+███╔══██╗╚════██╗██║   ██║
+███████╔╝ █████╔╝██║   ██║
+███╔══██╗ ╚═══██╗╚██╗ ██╔╝
+███║  ██║██████╔╝ ╚████╔╝{R}
+{GRAY}Provider:{R} {GREEN}{provider:<10}{R} | {GRAY}Model:{R} {YELLOW}{model:<24}{R}
 Type {BOLD}/help{R} for commands, {BOLD}!cmd{R} for shell, or type your query.
 """)
 
@@ -181,7 +183,7 @@ def main():
 
     while True:
         try:
-            prompt = input(f"{CYAN}r3v[{GREEN}{current_provider}{CYAN}] › {R}").strip()
+            prompt = input(f"{GRAY}r3v[{GREEN}{current_provider}{GRAY}] › {R}").strip()
         except (KeyboardInterrupt, EOFError):
             print(f"\n{YELLOW}Exiting R3v. Goodbye!{R}")
             break
@@ -311,7 +313,7 @@ def main():
             cmd = re.sub(r"^```(?:bash|sh)?\n?", "", cmd)
             cmd = re.sub(r"\n?```$", "", cmd).strip()
             print(f"{YELLOW}Suggested Command:{R} {BOLD}{cmd}{R}")
-            ans = input(f"{CYAN}Run it? [y/N]: {R}").strip().lower()
+            ans = input(f"{GRAY}Run it? [y/N]: {R}").strip().lower()
             if ans == 'y':
                 subprocess.run(cmd, shell=True)
             continue
